@@ -1,0 +1,70 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/architect_pro/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Template {
+  id            String   @id @default(cuid())
+  name          String
+  bhkType       String   // "Studio", "1BHK", "2BHK", "3BHK", "4BHK", "5BHK+"
+  propertyType  String   @default("Apartment") // "Apartment", "Condo", "Villa", "Townhouse", "Duplex", "Penthouse", "Studio", "Bungalow"
+  shape         String   @default("Rectangular") // "Rectangular", "L-Shaped", "H-Shaped", "M-Shaped"
+  description   String?
+  sections      Json?    // Array of section objects for complex shapes { x, y, width, height }
+  roomsData     Json     // Array of rooms with dimensions, positions, types
+  doorsData     Json?    // Array of doors with positions and types
+  windowsData   Json?    // Array of windows
+  fixturesData  Json?    // Array of bathroom/kitchen fixtures
+  furnitureData Json?    // Array of furniture items
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([bhkType])
+  @@index([propertyType])
+  @@index([shape])
+}
+
+model Design {
+  id              String   @id @default(cuid())
+  name            String
+  bhkType         String
+  templateId      String?
+  roomsData       Json     // Current room configuration
+  specifications  Json     // Wall thickness, dimensions, etc.
+  metadata        Json?    // Additional info
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([bhkType])
+}
+
+model Configuration {
+  id              String   @id @default(cuid())
+  designId        String   @unique
+  overallWidth    Float    // in meters or feet
+  overallHeight   Float    // in meters or feet
+  wallThickness   Float    // in cm or inches
+  ceilingHeight   Float    // in meters or feet
+  unit            String   @default("meters") // "meters" or "feet"
+  drainageSpecs   Json?    // Future use
+  sewageSpecs     Json?    // Future use
+  materialSpecs   Json?    // Future use
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserPreference {
+  id             String   @id @default(cuid())
+  userId         String?  @unique
+  defaultUnit    String   @default("meters")
+  defaultBHK     String   @default("2BHK")
+  preferences    Json?    // Additional preferences
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
